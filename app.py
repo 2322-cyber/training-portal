@@ -141,7 +141,7 @@ if prs:
         if time_remaining > 0:
             st.button(f"⏱️ Next Slide Locked ({time_remaining}s remaining)", disabled=True)
             time.sleep(1)
-                st.rerun()
+            st.rerun()
             else:
                 if current_slide < total_slides - 1:
                     if st.button("➡️ Next Slide"):
