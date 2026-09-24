@@ -122,7 +122,7 @@ except Exception:
     total_slides = 1
 
 if not st.session_state.get("quiz_started", False):
-    current_slide = st.session_state.slide_index
+    current_slide = st.session_state.get("slide_index", 0)
     st.subheader(f"Presentation View: Slide {current_slide + 1} of {total_slides}")
             
         # ONLY extract text if prs is a valid PowerPoint file:
