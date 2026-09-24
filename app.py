@@ -132,7 +132,7 @@ else:
         st.title(f"📖 Active Module: {course_title}")
 
         # 1. Fetch questions BEFORE closing the data base connection
-        c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (str(presentation_id),)
+        c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (str(presentation_id),))
         quiz_questions = c.fetchall()
 
         # 2. NOW close the database connection safely
