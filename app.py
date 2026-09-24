@@ -131,10 +131,16 @@ else:
 
         st.title(f"📖 Active Module: {course_title}")
 
-        # Render presentation: handle image list vs single file
+        # 1. Fetch questions BEFORE closing the data base connection
+        c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (str(presentation_id),)
+        quiz_questions = c.fetchall()
+
+        # 2. NOW close the database connection safely
+        conn.close()
+
+        # 3. Render the presentation slides
         if isinstance(slides, list):
             idx = st.session_state.get("slide_index", 0)
-            # Ensure index stays within bounds
             idx = min(max(0, idx), len(slides) - 1)
             st.image(slides[idx], use_container_width=True)
         else:
