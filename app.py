@@ -132,7 +132,7 @@ else:
         quiz_questions = c.fetchall()
 
         #2. Close the database connection ONCE
-        conn.close()
+        
 
         # 3. Render the presentation slides
         if isinstance(slides, list):
