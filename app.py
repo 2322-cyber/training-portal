@@ -83,7 +83,7 @@ if mode == "admin":
                                 c.execute("INSERT INTO presentations VALUES (?, ?, ?)",
                                           (course_id, course_title, file_data))
 
-                        c.execute("INSERT INTO presentations VALUES (?, ?, ?)", 
+                                c.execute("INSERT INTO presentations VALUES (?, ?, ?)", 
                                   (course_id, course_title, uploaded_file.read()))
                         for q_data in questions_data:
                             c.execute("INSERT INTO questions (pres_id, question, op1, op2, op3, op4, correct) VALUES (?, ?, ?, ?, ?, ?, ?)",
