@@ -108,7 +108,7 @@ else:
         conn.close()
 
         st.title(f"📖 Active Module: {course_title}")
-        st.image(pptx_bytes, use_container_width=true)
+        st.image(pptx_bytes, use_container_width=True)
         if "slide_index" not in st.session_state:
             st.session_state.slide_index = 0
             st.session_state.timer_start = time.time()
