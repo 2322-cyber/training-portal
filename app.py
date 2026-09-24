@@ -122,26 +122,27 @@ except Exception:
     total_slides = 1
 
 if not st.session_state.quiz_started:
-            current_slide = st.session_state.slide_index
-            st.subheader(f"Presentation View: Slide {current_slide + 1} of {total_slides}")
+    current_slide = st.session_state.slide_index
+    st.subheader(f"Presentation View: Slide {current_slide + 1} of {total_slides}")
             
         # ONLY extract text if prs is a valid PowerPoint file:
-if prs:
+    if prs:
         slide = prs.slides[current_slide]
         text_runs = []
         for shape in slide.shapes:
             if hasattr(shape, "text") and shape.text.strip():
                 text_runs.append(shape.text)
-        
-        st.info(" ".join(text_runs) if text_runs else "[Visual Slide Structure Content - Proceed via timer]")
+   
+        if text_runs:
+            st.info(" ".join(text_runs) if text_runs else "[Visual Slide Structure Content - Proceed via timer]")
             
-        elapsed = time.time() - st.session_state.timer_start
-        time_remaining = max(0, 3 - int(elapsed))
+    elapsed = time.time() - st.session_state.timer_start
+    time_remaining = max(0, 3 - int(elapsed))
         
-        if time_remaining > 0:
-            st.button(f"⏱️ Next Slide Locked ({time_remaining}s remaining)", disabled=True)
-            time.sleep(1)
-            st.rerun()
+    if time_remaining > 0:
+        st.button(f"⏱️ Next Slide Locked ({time_remaining}s remaining)", disabled=True)
+        time.sleep(1)
+        st.rerun()
     else:
         if current_slide < total_slides - 1:
             if st.button("➡️ Next Slide"):
