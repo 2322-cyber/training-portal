@@ -129,9 +129,7 @@ else:
                 if hasattr(shape, "text") and shape.text.strip():
                     text_runs.append(shape.text)
             
-            st.info("
-
-".join(text_runs) if text_runs else "[Visual Slide Structure Content - Proceed via timer]")
+            st.info(" ".join(text_runs) if text_runs else "[Visual Slide Structure Content - Proceed via timer]")
             
             elapsed = time.time() - st.session_state.timer_start
             time_remaining = max(0, 10 - int(elapsed))
