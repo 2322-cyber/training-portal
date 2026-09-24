@@ -91,12 +91,12 @@ if mode == "admin":
                                 conn.commit()
                                 st.success("🎉 Training Module Successfully Stored and Active!")
                         
-                        share_url = f"https://training-app-cpd.streamlit.app/?id={course_id}"
-                        st.info(f"**Shareable Presentation URL for Students:** `{share_url}`")
-                    except sqlite3.IntegrityError:
-                        st.error("That Course ID already exists. Please choose a different unique identifier.")
-                    finally:
-                        conn.close()
+                                share_url = f"https://training-app-cpd.streamlit.app/?id={course_id}"
+                                st.info(f"**Shareable Presentation URL for Students:** `{share_url}`")
+                            except sqlite3.IntegrityError:
+                                st.error("That Course ID already exists. Please choose a different unique identifier.")
+                            finally:
+                                conn.close()
     elif admin_token:
         st.error("Invalid Administrative Credentials Provided")
 
