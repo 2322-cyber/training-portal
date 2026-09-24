@@ -124,9 +124,10 @@ else:
             slides = pickle.loads(pptx_bytes)
         except Exception:
             slides = pptx_bytes
-
+        # Fetch questions BEFORE closing connection
         c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (str(presentation_id),))
         quiz_questions = c.fetchall()
+       
         conn.close()
 
         st.title(f"📖 Active Module: {course_title}")
