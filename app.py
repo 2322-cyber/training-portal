@@ -43,7 +43,7 @@ if mode == "admin":
         with st.form("create_course"):
             course_id = st.text_input("Unique Course ID (e.g., safety-2026)", help="This forms part of the unique sharing URL link")
             course_title = st.text_input("Course Title")
-            uploaded_file = st.file_uploader("Upload PowerPoint Presentation (.pptx)", type=["pptx"])
+            uploaded_file = st.file_uploader("Upload PowerPoint Presentation or Slide Images", type=["pptx", "png", "jpg", "jpeg"])
             
             st.write("---")
             st.subheader("📋 Quiz Setup (Configure 5 Custom Questions)")
@@ -64,7 +64,7 @@ if mode == "admin":
             
             if submit:
                 if not course_id or not course_title or not uploaded_file:
-                    st.error("All visual configurations, text labels, and a valid .pptx file must be supplied.")
+                    st.error("All visual configurations, text labels, and a valid file (.pptx, .png, .jpg) must be supplied.")
                 else:
                     conn = sqlite3.connect(DB_FILE)
                     c = conn.cursor()
@@ -108,7 +108,7 @@ else:
         conn.close()
 
         st.title(f"📖 Active Module: {course_title}")
-        
+        st.image(pptx_bytes, use_container_width=true)
         if "slide_index" not in st.session_state:
             st.session_state.slide_index = 0
             st.session_state.timer_start = time.time()
@@ -132,7 +132,7 @@ else:
             st.info(" ".join(text_runs) if text_runs else "[Visual Slide Structure Content - Proceed via timer]")
             
             elapsed = time.time() - st.session_state.timer_start
-            time_remaining = max(0, 10 - int(elapsed))
+            time_remaining = max(0, 3 - int(elapsed))
             
             if time_remaining > 0:
                 st.button(f"⏱️ Next Slide Locked ({time_remaining}s remaining)", disabled=True)
