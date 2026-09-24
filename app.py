@@ -70,33 +70,30 @@ if mode == "admin":
                     c = conn.cursor()
                     try:
                         # Process uploaded file(s) into bytes:
-                                if isinstance(uploaded_file, list):
-                                    if len(uploaded_file) == 1 and uploaded_file[0].name.lower().endswith(".pptx"):
-                                        file_data = uploaded_file[0].read()
-                                    else:
-                                        # Sort image files so slide sequence remains intact
-                                        sorted_files = sorted(uploaded_file, key=lambda x: x.name)
-                                        file_data = [f.read() for f in sorted_files]
-                                else:
-                                    file_data = uploaded_file.read()
+                        if isinstance(uploaded_file, list) and len(uploaded_file) == 1 and uploaded_file[0].name.lower().endswith(".pptx"):
+                            file_data = uploaded_file[0].read()
+                        elif isintance(upload_file, List):
+                            # Sort image files so slide sequence remains intact
+                            sorted_files = sorted(uploaded_file, key=lambda x: x.name)
+                            file_data = [f.read() for f in sorted_files]
+                        else:
+                            file_data = uploaded_file.read()
                         
-                                c.execute("INSERT INTO presentations VALUES (?, ?, ?)",
-                                          (course_id, course_title, file_data))
+                        c.execute("INSERT INTO presentations VALUES (?, ?, ?)",
+                                  (course_id, course_title, file_data))
 
-                                c.execute("INSERT INTO presentations VALUES (?, ?, ?)", 
-                                  (course_id, course_title, uploaded_file.read()))
-                                for q_data in questions_data:
-                                    c.execute("INSERT INTO questions (pres_id, question, op1, op2, op3, op4, correct) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        for q_data in questions_data:
+                            c.execute("INSERT INTO questions (pres_id, question, op1, op2, op3, op4, correct) VALUES (?, ?, ?, ?, ?, ?, ?)",
                                       (course_id, *q_data))
-                                conn.commit()
-                                st.success("🎉 Training Module Successfully Stored and Active!")
+                        conn.commit()
+                        st.success("🎉 Training Module Successfully Stored and Active!")
                         
-                                share_url = f"https://training-app-cpd.streamlit.app/?id={course_id}"
-                                st.info(f"**Shareable Presentation URL for Students:** `{share_url}`")
-                            except sqlite3.IntegrityError:
-                                st.error("That Course ID already exists. Please choose a different unique identifier.")
-                            finally:
-                                conn.close()
+                        share_url = f"https://training-app-cpd.streamlit.app/?id={course_id}"
+                        st.info(f"**Shareable Presentation URL for Students:** `{share_url}`")
+                    except sqlite3.IntegrityError:
+                        st.error("That Course ID already exists. Please choose a different unique identifier.")
+                    finally:
+                        conn.close()
     elif admin_token:
         st.error("Invalid Administrative Credentials Provided")
 
