@@ -43,7 +43,7 @@ if mode == "admin":
         with st.form("create_course"):
             course_id = st.text_input("Unique Course ID (e.g., safety-2026)", help="This forms part of the unique sharing URL link")
             course_title = st.text_input("Course Title")
-            uploaded_file = st.file_uploader("Upload PowerPoint Presentation or Slide Images", type=["pptx", "png", "jpg", "jpeg"])
+            uploaded_file = st.file_uploader("Upload PowerPoint Presentation or Slide Images", type=["pptx", "png", "jpg", "jpeg"], accept_multiple_files=True)
             
             st.write("---")
             st.subheader("📋 Quiz Setup (Configure 5 Custom Questions)")
