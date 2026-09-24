@@ -140,7 +140,7 @@ else:
         else:
             st.image(slides, use_container_width=True)
 
-        c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (str(presentation_id,),)
+        c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (str(presentation_id,),))
         quiz_questions = c.fetchall()
         conn.close()
 
