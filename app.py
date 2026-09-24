@@ -30,6 +30,8 @@ st.set_page_config(page_title="Multi-Course Training Portal", layout="centered",
 
 query_params = st.query_params
 presentation_id = query_params.get("id", None)
+if isinstance(presentation_id, list):
+    presentation_id = presentation_id[0]
 mode = query_params.get("mode", "student" if presentation_id else "admin")
 
 # --- ADMIN DASHBOARD ---
@@ -138,7 +140,7 @@ else:
         else:
             st.image(slides, use_container_width=True)
 
-        c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (presentation_id,))
+        c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (str(presentation_id,),)
         quiz_questions = c.fetchall()
         conn.close()
 
