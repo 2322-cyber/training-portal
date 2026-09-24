@@ -114,7 +114,7 @@ else:
             st.session_state.timer_start = time.time()
             st.session_state.quiz_started = False
             st.session_state.passed = False
-
+try:
         prs = Presentation(io.BytesIO(pptx_bytes))
         total_slides = len(prs.slides)
 except Exception:
