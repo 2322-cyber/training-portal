@@ -135,12 +135,12 @@ if prs:
         
         st.info(" ".join(text_runs) if text_runs else "[Visual Slide Structure Content - Proceed via timer]")
             
-            elapsed = time.time() - st.session_state.timer_start
-            time_remaining = max(0, 3 - int(elapsed))
-            
-            if time_remaining > 0:
-                st.button(f"⏱️ Next Slide Locked ({time_remaining}s remaining)", disabled=True)
-                time.sleep(1)
+        elapsed = time.time() - st.session_state.timer_start
+        time_remaining = max(0, 3 - int(elapsed))
+        
+        if time_remaining > 0:
+            st.button(f"⏱️ Next Slide Locked ({time_remaining}s remaining)", disabled=True)
+            time.sleep(1)
                 st.rerun()
             else:
                 if current_slide < total_slides - 1:
