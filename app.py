@@ -125,7 +125,8 @@ if not st.session_state.quiz_started:
             current_slide = st.session_state.slide_index
             st.subheader(f"Presentation View: Slide {current_slide + 1} of {total_slides}")
             
-            # Simple fallback presentation text extractor
+            # ONLY extract text if prs is a valid PowerPoint file:
+    if prs:
             slide = prs.slides[current_slide]
             text_runs = []
             for shape in slide.shapes:
