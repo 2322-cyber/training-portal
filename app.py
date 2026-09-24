@@ -143,7 +143,7 @@ if not st.session_state.quiz_started:
         st.button(f"⏱️ Next Slide Locked ({time_remaining}s remaining)", disabled=True)
         time.sleep(1)
         st.rerun()
-else:
+    else:
     if current_slide < total_slides - 1:
         if st.button("➡️ Next Slide"):
             st.session_state.slide_index += 1
