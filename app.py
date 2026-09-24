@@ -152,7 +152,7 @@ if not st.session_state.quiz_started:
                         st.session_state.quiz_started = True
                         st.rerun()
                         
-        elif st.session_state.quiz_started and not st.session_state.passed:
+elif st.session_state.quiz_started and not st.session_state.passed:
             st.subheader("📋 Assessment Phase")
             st.write("Achieve a perfect 100% score (5/5 answers correct) to finalize certification. Unlimited retries allowed.")
             
