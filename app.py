@@ -175,7 +175,7 @@ elif st.session_state.quiz_started and not st.session_state.passed:
                     else:
                         st.error(f"❌ Standard Not Met ({correct_count}/5 correct). review material and restart evaluation.")
 
-        elif st.session_state.passed:
+elif st.session_state.passed:
             st.balloons()
             st.success("🎓 Training Requirements Successfully Satisfied!")
             
