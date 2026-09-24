@@ -115,11 +115,11 @@ else:
             st.session_state.quiz_started = False
             st.session_state.passed = False
 try:
-        prs = Presentation(io.BytesIO(pptx_bytes))
-        total_slides = len(prs.slides)
+    prs = Presentation(io.BytesIO(pptx_bytes))
+    total_slides = len(prs.slides)
 except Exception:
-prs = None
-total_slides = 1
+    prs = None
+    total_slides = 1
 
         if not st.session_state.quiz_started:
             current_slide = st.session_state.slide_index
