@@ -72,7 +72,7 @@ if mode == "admin":
                         # Process uploaded file(s) into bytes:
                         if isinstance(uploaded_file, list) and len(uploaded_file) == 1 and uploaded_file[0].name.lower().endswith(".pptx"):
                             file_data = uploaded_file[0].read()
-                        elif isintance(upload_file, List):
+                        elif isinstance(upload_file, List):
                             # Sort image files so slide sequence remains intact
                             sorted_files = sorted(uploaded_file, key=lambda x: x.name)
                             file_data = [f.read() for f in sorted_files]
