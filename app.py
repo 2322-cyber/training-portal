@@ -111,8 +111,14 @@ else:
         st.image(pptx_bytes, use_container_width=True)
         if "slide_index" not in st.session_state:
             st.session_state.slide_index = 0
+        
+        if "timer_start" not in st.session_state:
             st.session_state.timer_start = time.time()
+
+        if "quiz_started" not in st.session_state:
             st.session_state.quiz_started = False
+
+        if "passed" not in st.session_state:
             st.session_state.passed = False
 try:
     prs = Presentation(io.BytesIO(pptx_bytes))
