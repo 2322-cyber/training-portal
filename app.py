@@ -142,16 +142,16 @@ if prs:
             st.button(f"⏱️ Next Slide Locked ({time_remaining}s remaining)", disabled=True)
             time.sleep(1)
             st.rerun()
-        else:
-            if current_slide < total_slides - 1:
-                if st.button("➡️ Next Slide"):
-                    st.session_state.slide_index += 1
-                    st.session_state.timer_start = time.time()
-                    st.rerun()
-        else:
-            if st.button("📝 Initiate Certification Assessment"):
-                st.session_state.quiz_started = True
+    else:
+        if current_slide < total_slides - 1:
+            if st.button("➡️ Next Slide"):
+                st.session_state.slide_index += 1
+                st.session_state.timer_start = time.time()
                 st.rerun()
+    else:
+        if st.button("📝 Initiate Certification Assessment"):
+            st.session_state.quiz_started = True
+            st.rerun()
                         
 elif st.session_state.quiz_started and not st.session_state.passed:
             st.subheader("📋 Assessment Phase")
