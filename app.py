@@ -69,19 +69,19 @@ if mode == "admin":
                     conn = sqlite3.connect(DB_FILE)
                     c = conn.cursor()
                     try:
-# Process uploaded file(s) into bytes:
-        if isinstance(uploaded_file, list):
-            if len(uploaded_file) == 1 and uploaded_file[0].name.lower().endswith(".pptx"):
-                file_data = uploaded_file[0].read()
-            else:
-                # Sort image files so slide sequence remains intact
-                sorted_files = sorted(uploaded_file, key=lambda x: x.name)
-                file_data = [f.read() for f in sorted_files]
-        else:
-            file_data = uploaded_file.read()
-
-        c.execute("INSERT INTO presentations VALUES (?, ?, ?)",
-                  (course_id, course_title, file_data))
+                        # Process uploaded file(s) into bytes:
+                                if isinstance(uploaded_file, list):
+                                    if len(uploaded_file) == 1 and uploaded_file[0].name.lower().endswith(".pptx"):
+                                        file_data = uploaded_file[0].read()
+                                    else:
+                                        # Sort image files so slide sequence remains intact
+                                        sorted_files = sorted(uploaded_file, key=lambda x: x.name)
+                                        file_data = [f.read() for f in sorted_files]
+                                else:
+                                    file_data = uploaded_file.read()
+                        
+                                c.execute("INSERT INTO presentations VALUES (?, ?, ?)",
+                                          (course_id, course_title, file_data))
 
                         c.execute("INSERT INTO presentations VALUES (?, ?, ?)", 
                                   (course_id, course_title, uploaded_file.read()))
