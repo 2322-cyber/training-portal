@@ -1,3 +1,4 @@
+import pickle
 import streamlit as st
 import time
 from pptx import Presentation
@@ -75,7 +76,8 @@ if mode == "admin":
                         elif isinstance(uploaded_file, list):
                             # Sort image files so slide sequence remains intact
                             sorted_files = sorted(uploaded_file, key=lambda x: x.name)
-                            file_data = [f.read() for f in sorted_files]
+                            # Serialize list of image bytes for SQLite storage
+                            file_data = pickle.dumps([f.read() for f in sorted_files])
                         else:
                             file_data = uploaded_file.read()
                         
@@ -114,6 +116,28 @@ else:
             st.stop()
             
         course_title, pptx_bytes = course
+        
+        # Unpack serialized multi-slide images or keep as raw bytes (.pptx)
+        try:
+            slides = pickle.loads(pptx_bytes)
+        except Exception:
+            slides = pptx_bytes
+
+        c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (presentation_id,))
+        quiz_questions = c.fetchall()
+        conn.close()
+
+        st.title(f"📖 Active Module: {course_title}")
+
+        # Render presentation: handle image list vs single file
+        if isinstance(slides, list):
+            idx = st.session_state.get("slide_index", 0)
+            # Ensure index stays within bounds
+            idx = min(max(0, idx), len(slides) - 1)
+            st.image(slides[idx], use_container_width=True)
+        else:
+            st.image(slides, use_container_width=True)
+
         c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (presentation_id,))
         quiz_questions = c.fetchall()
         conn.close()
