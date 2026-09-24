@@ -85,11 +85,11 @@ if mode == "admin":
 
                                 c.execute("INSERT INTO presentations VALUES (?, ?, ?)", 
                                   (course_id, course_title, uploaded_file.read()))
-                        for q_data in questions_data:
-                            c.execute("INSERT INTO questions (pres_id, question, op1, op2, op3, op4, correct) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                for q_data in questions_data:
+                                    c.execute("INSERT INTO questions (pres_id, question, op1, op2, op3, op4, correct) VALUES (?, ?, ?, ?, ?, ?, ?)",
                                       (course_id, *q_data))
-                        conn.commit()
-                        st.success("🎉 Training Module Successfully Stored and Active!")
+                                conn.commit()
+                                st.success("🎉 Training Module Successfully Stored and Active!")
                         
                         share_url = f"https://training-app-cpd.streamlit.app/?id={course_id}"
                         st.info(f"**Shareable Presentation URL for Students:** `{share_url}`")
