@@ -123,7 +123,7 @@ else:
         except Exception:
             slides = pptx_bytes
 
-        c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (presentation_id,))
+        c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (str(presentation_id),))
         quiz_questions = c.fetchall()
         conn.close()
 
