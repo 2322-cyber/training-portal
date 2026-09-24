@@ -121,7 +121,7 @@ except Exception:
     prs = None
     total_slides = 1
 
-if not st.session_state.quiz_started:
+if not st.session_state.get("quiz_started", False):
     current_slide = st.session_state.slide_index
     st.subheader(f"Presentation View: Slide {current_slide + 1} of {total_slides}")
             
