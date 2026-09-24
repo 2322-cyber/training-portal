@@ -142,7 +142,7 @@ if not st.session_state.get("quiz_started", False):
         if text_runs:
             st.info(" ".join(text_runs) if text_runs else "[Visual Slide Structure Content - Proceed via timer]")
             
-    elapsed = time.time() - st.session_state.timer_start
+    elapsed = time.time() - st.session_state.get("timer_start", time.time())
     time_remaining = max(0, 3 - int(elapsed))
         
     if time_remaining > 0:
