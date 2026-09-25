@@ -2,7 +2,6 @@ import pickle
 import streamlit as st
 import time
 from pptx import Presentation
-import os
 import sqlite3
 import datetime
 from reportlab.lib.pagesizes import letter, landscape
@@ -54,12 +53,12 @@ if mode == "admin":
             questions_data = []
             for i in range(1, 6):
                 st.markdown(f"### Question {i}")
-                q = st.text_input(f"Question text", key=f"q_{i}")
-                o1 = st.text_input(f"Option A", key=f"o1_{i}")
-                o2 = st.text_input(f"Option B", key=f"o2_{i}")
-                o3 = st.text_input(f"Option C", key=f"o3_{i}")
-                o4 = st.text_input(f"Option D", key=f"o4_{i}")
-                correct = st.selectbox(f"Correct Option", ["A", "B", "C", "D"], key=f"c_{i}")
+                q = st.text_input("Question text", key=f"q_{i}")
+                o1 = st.text_input("Option A", key=f"o1_{i}")
+                o2 = st.text_input("Option B", key=f"o2_{i}")
+                o3 = st.text_input("Option C", key=f"o3_{i}")
+                o4 = st.text_input("Option D", key=f"o4_{i}")
+                correct = st.selectbox("Correct Option", ["A", "B", "C", "D"], key=f"c_{i}")
                 correct_idx = ["A", "B", "C", "D"].index(correct) + 1
                 questions_data.append((q, o1, o2, o3, o4, correct_idx))
             
@@ -72,13 +71,10 @@ if mode == "admin":
                     conn = sqlite3.connect(DB_FILE)
                     c = conn.cursor()
                     try:
-                        # Process uploaded file(s) into bytes:
                         if isinstance(uploaded_file, list) and len(uploaded_file) == 1 and uploaded_file[0].name.lower().endswith(".pptx"):
                             file_data = uploaded_file[0].read()
                         elif isinstance(uploaded_file, list):
-                            # Sort image files so slide sequence remains intact
                             sorted_files = sorted(uploaded_file, key=lambda x: x.name)
-                            # Serialize list of image bytes for SQLite storage
                             file_data = pickle.dumps([f.read() for f in sorted_files])
                         else:
                             file_data = uploaded_file.read()
@@ -119,6 +115,11 @@ else:
             
         course_title, pptx_bytes = course
         
+        # Fetch questions BEFORE closing connection
+        c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (str(presentation_id),))
+        quiz_questions = c.fetchall()
+        conn.close()
+
         # Unpack serialized multi-slide images or keep as raw bytes (.pptx)
         try:
             slides = pickle.loads(pptx_bytes)
@@ -127,79 +128,67 @@ else:
 
         st.title(f"📖 Active Module: {course_title}")
         
-        # 1. Fetch questions BEFORE closing connection
-        c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (str(presentation_id),))
-        quiz_questions = c.fetchall()
-
-        #2. Close the database connection ONCE
-        
-
-        # 3. Render the presentation slides
-        if isinstance(slides, list):
-            idx = st.session_state.get("slide_index", 0)
-            idx = min(max(0, idx), len(slides) - 1)
-            st.image(slides[idx], use_container_width=True)
-        else:
-            st.image(slides, use_container_width=True)
-
-        c.execute("SELECT question, op1, op2, op3, op4, correct FROM questions WHERE pres_id = ?", (str(presentation_id),))
-        quiz_questions = c.fetchall()
-        conn.close()
-
-        st.title(f"📖 Active Module: {course_title}")
-      
+        # Initialize session states
         if "slide_index" not in st.session_state:
             st.session_state.slide_index = 0
-        
         if "timer_start" not in st.session_state:
             st.session_state.timer_start = time.time()
-
         if "quiz_started" not in st.session_state:
             st.session_state.quiz_started = False
-
         if "passed" not in st.session_state:
             st.session_state.passed = False
-try:
-    prs = Presentation(io.BytesIO(pptx_bytes))
-    total_slides = len(prs.slides)
-except Exception:
-    prs = None
-    total_slides = 1
 
-if not st.session_state.get("quiz_started", False):
-    current_slide = st.session_state.get("slide_index", 0)
-    st.subheader(f"Presentation View: Slide {current_slide + 1} of {total_slides}")
+        # Attempt PPTX parsing
+        try:
+            prs = Presentation(io.BytesIO(pptx_bytes)) if isinstance(pptx_bytes, bytes) else None
+            total_slides = len(prs.slides) if prs else (len(slides) if isinstance(slides, list) else 1)
+        except Exception:
+            prs = None
+            total_slides = len(slides) if isinstance(slides, list) else 1
+
+        # Phase 1: Presentation Navigation
+        if not st.session_state.quiz_started:
+            current_slide = st.session_state.slide_index
+            st.subheader(f"Presentation View: Slide {current_slide + 1} of {total_slides}")
             
-        # ONLY extract text if prs is a valid PowerPoint file:
-    if prs:
-        slide = prs.slides[current_slide]
-        text_runs = []
-        for shape in slide.shapes:
-            if hasattr(shape, "text") and shape.text.strip():
-                text_runs.append(shape.text)
-   
-        if text_runs:
-            st.info(" ".join(text_runs) if text_runs else "[Visual Slide Structure Content - Proceed via timer]")
+            # Render visual slide
+            if isinstance(slides, list):
+                idx = min(max(0, current_slide), len(slides) - 1)
+                st.image(slides[idx], use_container_width=True)
+            else:
+                st.image(slides, use_container_width=True)
+
+            # Extract slide text if PPTX object exists
+            if prs and current_slide < len(prs.slides):
+                slide = prs.slides[current_slide]
+                text_runs = []
+                for shape in slide.shapes:
+                    if hasattr(shape, "text") and shape.text.strip():
+                        text_runs.append(shape.text)
+                if text_runs:
+                    st.info(" ".join(text_runs))
+
+            # Timed Navigation Controls
+            elapsed = time.time() - st.session_state.timer_start
+            time_remaining = max(0, 3 - int(elapsed))
             
-    elapsed = time.time() - st.session_state.get("timer_start", time.time())
-    time_remaining = max(0, 3 - int(elapsed))
-        
-    if time_remaining > 0:
-        st.button(f"⏱️ Next Slide Locked ({time_remaining}s remaining)", disabled=True)
-        time.sleep(1)
-        st.rerun()
-    else:
-        if current_slide < total_slides - 1:
-            if st.button("➡️ Next Slide"):
-                st.session_state.slide_index += 1
-                st.session_state.timer_start = time.time()
+            if time_remaining > 0:
+                st.button(f"⏱️ Next Slide Locked ({time_remaining}s remaining)", disabled=True)
+                time.sleep(1)
                 st.rerun()
-        else:
-            if st.button("📝 Initiate Certification Assessment"):
-                st.session_state.quiz_started = True
-                st.rerun()
-                        
-elif st.session_state.quiz_started and not st.session_state.passed:
+            else:
+                if current_slide < total_slides - 1:
+                    if st.button("➡️ Next Slide"):
+                        st.session_state.slide_index += 1
+                        st.session_state.timer_start = time.time()
+                        st.rerun()
+                else:
+                    if st.button("📝 Initiate Certification Assessment"):
+                        st.session_state.quiz_started = True
+                        st.rerun()
+
+        # Phase 2: Quiz Assessment
+        elif st.session_state.quiz_started and not st.session_state.passed:
             st.subheader("📋 Assessment Phase")
             st.write("Achieve a perfect 100% score (5/5 answers correct) to finalize certification. Unlimited retries allowed.")
             
@@ -215,14 +204,15 @@ elif st.session_state.quiz_started and not st.session_state.passed:
                 
                 if submit_quiz:
                     correct_count = sum(1 for u, q in zip(user_answers, quiz_questions) if u == q[5])
-                    if correct_count == 5:
+                    if correct_count == len(quiz_questions) and len(quiz_questions) > 0:
                         st.session_state.passed = True
                         st.success("🎉 Verification Criteria Satisfied! Proceed to enter credentials.")
                         st.rerun()
                     else:
-                        st.error(f"❌ Standard Not Met ({correct_count}/5 correct). review material and restart evaluation.")
+                        st.error(f"❌ Standard Not Met ({correct_count}/{len(quiz_questions)} correct). Review material and restart evaluation.")
 
-elif st.session_state.passed:
+        # Phase 3: Completion & Certificate Issuance
+        elif st.session_state.passed:
             st.balloons()
             st.success("🎓 Training Requirements Successfully Satisfied!")
             
@@ -246,13 +236,13 @@ elif st.session_state.passed:
                     Spacer(1, 20),
                     Paragraph(student_name.upper(), name_style),
                     Spacer(1, 20),
-                    Paragraph(f"has fully complied with and finished the core instructional guidelines for", body_style),
+                    Paragraph("has fully complied with and finished the core instructional guidelines for", body_style),
                     Spacer(1, 10),
                     Paragraph(f"<b>{course_title}</b>", body_style),
                     Spacer(1, 40),
                     Paragraph(f"Timestamp of Issue: {now}", body_style),
                     Spacer(1, 30),
-                    Paragraph("This is for informational purposes only. For medical advice or diagnosis, consult a professional. AI responses may include mistakes.", ParagraphStyle('Footer', parent=body_style, fontSize=8, textColor='gray'))
+                    Paragraph("This is for informational purposes only.", ParagraphStyle('Footer', parent=body_style, fontSize=8, textColor='gray'))
                 ]
                 
                 doc.build(story)
