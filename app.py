@@ -29,7 +29,8 @@ def init_db():
 
 init_db()
 
-st.set_page_config(page_title="Multi-Course Training Portal", layout="centered", page_icon="🎓")
+# Enabled 'wide' layout so presentation slides render much larger on screen
+st.set_page_config(page_title="Multi-Course Training Portal", layout="wide", page_icon="🎓")
 
 query_params = st.query_params
 presentation_id = query_params.get("id", None)
@@ -158,14 +159,17 @@ else:
             except Exception:
                 total_slides = 1
 
-        # Phase 1: Slide Navigation
+        # Phase 1: Slide Navigation (Expanded Viewing Layout)
         if not st.session_state.quiz_started:
             current_slide = st.session_state.slide_index
             st.subheader(f"Presentation View: Slide {current_slide + 1} of {total_slides}")
             
+            # Display image in a centered 12-width column for optimal slide sizing
             if is_image_slides:
                 idx = min(max(0, current_slide), len(slides) - 1)
-                st.image(io.BytesIO(slides[idx]), use_container_width=True)
+                col1, col2, col3 = st.columns([0.5, 11, 0.5])
+                with col2:
+                    st.image(io.BytesIO(slides[idx]), use_container_width=True)
             elif prs:
                 slide = prs.slides[current_slide]
                 text_runs = [shape.text.strip() for shape in slide.shapes if hasattr(shape, "text") and shape.text.strip()]
@@ -174,6 +178,9 @@ else:
                 else:
                     st.warning("Slide contains visual elements. Proceed using the timer controls below.")
 
+            st.write("---")
+            
+            # Timed Navigation Controls
             elapsed = time.time() - st.session_state.timer_start
             time_remaining = max(0, 3 - int(elapsed))
             
@@ -194,72 +201,76 @@ else:
 
         # Phase 2: Assessment Phase
         elif st.session_state.quiz_started and not st.session_state.passed:
-            st.subheader("📋 Assessment Phase")
-            st.write("Achieve a perfect 100% score (5/5 answers correct) to finalize certification. Unlimited retries allowed.")
-            
-            with st.form("quiz_form"):
-                user_answers = []
-                for idx, q in enumerate(quiz_questions):
-                    st.write(f"**Q{idx+1}: {q[0]}**")
-                    ans = st.radio("Select choice:", [q[1], q[2], q[3], q[4]], key=f"student_q_{idx}")
-                    ans_idx = [q[1], q[2], q[3], q[4]].index(ans) + 1
-                    user_answers.append(ans_idx)
+            col1, col2, col3 = st.columns([1, 8, 1])
+            with col2:
+                st.subheader("📋 Assessment Phase")
+                st.write("Achieve a perfect 100% score (5/5 answers correct) to finalize certification. Unlimited retries allowed.")
                 
-                submit_quiz = st.form_submit_button("Submit Evaluation")
-                
-                if submit_quiz:
-                    correct_count = sum(1 for u, q in zip(user_answers, quiz_questions) if u == q[5])
-                    if correct_count == len(quiz_questions) and len(quiz_questions) > 0:
-                        st.session_state.passed = True
-                        st.success("🎉 Verification Criteria Satisfied! Proceed to enter credentials.")
-                        st.rerun()
-                    else:
-                        st.error(f"❌ Standard Not Met ({correct_count}/{len(quiz_questions)} correct). Review material and restart evaluation.")
+                with st.form("quiz_form"):
+                    user_answers = []
+                    for idx, q in enumerate(quiz_questions):
+                        st.write(f"**Q{idx+1}: {q[0]}**")
+                        ans = st.radio("Select choice:", [q[1], q[2], q[3], q[4]], key=f"student_q_{idx}")
+                        ans_idx = [q[1], q[2], q[3], q[4]].index(ans) + 1
+                        user_answers.append(ans_idx)
+                    
+                    submit_quiz = st.form_submit_button("Submit Evaluation")
+                    
+                    if submit_quiz:
+                        correct_count = sum(1 for u, q in zip(user_answers, quiz_questions) if u == q[5])
+                        if correct_count == len(quiz_questions) and len(quiz_questions) > 0:
+                            st.session_state.passed = True
+                            st.success("🎉 Verification Criteria Satisfied! Proceed to enter credentials.")
+                            st.rerun()
+                        else:
+                            st.error(f"❌ Standard Not Met ({correct_count}/{len(quiz_questions)} correct). Review material and restart evaluation.")
 
         # Phase 3: Completion & Certificate Issuance
         elif st.session_state.passed:
             st.balloons()
-            st.success("🎓 Training Requirements Successfully Satisfied!")
-            
-            student_name = st.text_input("Enter Legal Full Name for Document Issuance:", key="cert_name_input")
-            
-            if student_name.strip():
-                buffer = io.BytesIO()
-                doc = SimpleDocTemplate(
-                    buffer, 
-                    pagesize=landscape(letter),
-                    rightMargin=40, leftMargin=40, topMargin=50, bottomMargin=40, 
-                    title="Training Certificate"
-                )
-                styles = getSampleStyleSheet()
+            col1, col2, col3 = st.columns([1, 8, 1])
+            with col2:
+                st.success("🎓 Training Requirements Successfully Satisfied!")
                 
-                title_style = ParagraphStyle('CertTitle', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=32, leading=38, alignment=TA_CENTER)
-                body_style = ParagraphStyle('CertBody', parent=styles['Normal'], fontName='Helvetica', fontSize=18, leading=24, alignment=TA_CENTER)
-                name_style = ParagraphStyle('CertName', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=26, leading=32, alignment=TA_CENTER, textColor='navy')
-                now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                student_name = st.text_input("Enter Legal Full Name for Document Issuance:", key="cert_name_input")
                 
-                story = [
-                    Paragraph("CERTIFICATE OF COMPLETION", title_style),
-                    Spacer(1, 30),
-                    Paragraph("This record serves to verify that", body_style),
-                    Spacer(1, 15),
-                    Paragraph(student_name.strip().upper(), name_style),
-                    Spacer(1, 15),
-                    Paragraph("has fully complied with and finished the core instructional guidelines for", body_style),
-                    Spacer(1, 10),
-                    Paragraph(f"<b>{course_title}</b>", body_style),
-                    Spacer(1, 30),
-                    Paragraph(f"Timestamp of Issue: {now}", body_style),
-                    Spacer(1, 20),
-                    Paragraph("This is an officially issued digital completion certificate.", ParagraphStyle('Footer', parent=body_style, fontSize=9, textColor='gray'))
-                ]
-                
-                doc.build(story)
-                buffer.seek(0)
-                
-                st.download_button(
-                    label="📥 Generate and Download Official PDF Certificate",
-                    data=buffer.getvalue(),
-                    file_name=f"Certificate_{student_name.strip().replace(' ', '_')}.pdf",
-                    mime="application/pdf"
-                )
+                if student_name.strip():
+                    buffer = io.BytesIO()
+                    doc = SimpleDocTemplate(
+                        buffer, 
+                        pagesize=landscape(letter),
+                        rightMargin=40, leftMargin=40, topMargin=50, bottomMargin=40, 
+                        title="Training Certificate"
+                    )
+                    styles = getSampleStyleSheet()
+                    
+                    title_style = ParagraphStyle('CertTitle', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=32, leading=38, alignment=TA_CENTER)
+                    body_style = ParagraphStyle('CertBody', parent=styles['Normal'], fontName='Helvetica', fontSize=18, leading=24, alignment=TA_CENTER)
+                    name_style = ParagraphStyle('CertName', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=26, leading=32, alignment=TA_CENTER, textColor='navy')
+                    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    story = [
+                        Paragraph("CERTIFICATE OF COMPLETION", title_style),
+                        Spacer(1, 30),
+                        Paragraph("This record serves to verify that", body_style),
+                        Spacer(1, 15),
+                        Paragraph(student_name.strip().upper(), name_style),
+                        Spacer(1, 15),
+                        Paragraph("has fully complied with and finished the core instructional guidelines for", body_style),
+                        Spacer(1, 10),
+                        Paragraph(f"<b>{course_title}</b>", body_style),
+                        Spacer(1, 30),
+                        Paragraph(f"Timestamp of Issue: {now}", body_style),
+                        Spacer(1, 20),
+                        Paragraph("This is an officially issued digital completion certificate.", ParagraphStyle('Footer', parent=body_style, fontSize=9, textColor='gray'))
+                    ]
+                    
+                    doc.build(story)
+                    buffer.seek(0)
+                    
+                    st.download_button(
+                        label="📥 Generate and Download Official PDF Certificate",
+                        data=buffer.getvalue(),
+                        file_name=f"Certificate_{student_name.strip().replace(' ', '_')}.pdf",
+                        mime="application/pdf"
+                    )
